@@ -1,89 +1,165 @@
 package service
 
 import (
+	"errors"
 	"reflect"
 	"testing"
 
 	"github.com/zalgonoise/eljoth-go-code-review/coupon_service/internal/discount"
+	"github.com/zalgonoise/eljoth-go-code-review/coupon_service/internal/repository"
 	"github.com/zalgonoise/eljoth-go-code-review/coupon_service/internal/repository/memdb"
 )
 
-func TestNew(t *testing.T) {
-	type args struct {
-		repo discount.Repository
-	}
-	tests := []struct {
-		name string
-		args args
-		want CouponService
-	}{
-		{"initialize service", args{repo: nil}, CouponService{repo: nil}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := New(tt.args.repo); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("New() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
+func TestService(t *testing.T) {
+	s := New(memdb.New())
+	inputCode := "abc"
+	inputDiscount := 10
+	inputMinBasketValue := 10
 
-func TestService_ApplyCoupon(t *testing.T) {
-	type fields struct {
-		repo discount.Repository
-	}
-	type args struct {
-		basket *discount.Basket
-		code   string
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		wantB   *discount.Basket
-		wantErr bool
-	}{}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			s := CouponService{
-				repo: tt.fields.repo,
-			}
-			err := s.ApplyCoupon(tt.args.basket, tt.args.code)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("ApplyCoupon() error = %v, wantErr %v", err, tt.wantErr)
+	t.Run("CreateCoupon", func(t *testing.T) {
+		t.Run("Success", func(t *testing.T) {
+			err := s.CreateCoupon(inputDiscount, inputCode, inputMinBasketValue)
+			if err != nil {
+				t.Errorf("unexpected error: %v", err)
 				return
 			}
-			if !reflect.DeepEqual(tt.args.basket, tt.wantB) {
-				t.Errorf("ApplyCoupon() gotB = %v, want %v", tt.args.basket, tt.wantB)
+		})
+		t.Run("FailInvalidCode", func(t *testing.T) {
+			err := s.CreateCoupon(inputDiscount, "", inputMinBasketValue)
+			if err == nil || !errors.Is(err, discount.ErrInvalidCode) {
+				t.Errorf("unexpected error: %v", err)
+				return
 			}
 		})
-	}
-}
 
-func TestService_CreateCoupon(t *testing.T) {
-	type fields struct {
-		repo discount.Repository
-	}
-	type args struct {
-		discount       int
-		code           string
-		minBasketValue int
-	}
-	tests := []struct {
-		name   string
-		fields fields
-		args   args
-		want   any
-	}{
-		{"Apply 10%", fields{memdb.New()}, args{10, "Superdiscount", 55}, nil},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			s := CouponService{
-				repo: tt.fields.repo,
+		t.Run("FailAlreadyExists", func(t *testing.T) {
+			err := s.CreateCoupon(inputDiscount, inputCode, inputMinBasketValue)
+			if err == nil || !errors.Is(err, repository.ErrAlreadyExists) {
+				t.Errorf("unexpected error: %v", err)
+				return
 			}
-
-			s.CreateCoupon(tt.args.discount, tt.args.code, tt.args.minBasketValue)
 		})
-	}
+	})
+	t.Run("GetCoupons", func(t *testing.T) {
+		t.Run("Success", func(t *testing.T) {
+			wants := &discount.Coupon{
+				Discount:       inputDiscount,
+				Code:           inputCode,
+				MinBasketValue: inputMinBasketValue,
+			}
+			coupons, err := s.GetCoupons(inputCode)
+			if err != nil {
+				t.Errorf("unexpected error: %v", err)
+				return
+			}
+			if len(coupons) != 1 {
+				t.Errorf("unexpected coupons slice length: wanted %d ; got %d", 1, len(coupons))
+				return
+			}
+			wants.ID = coupons[0].ID
+			if !reflect.DeepEqual(*wants, coupons[0]) {
+				t.Errorf("output mismatch error: wanted %v ; got %v", wants, coupons[0])
+			}
+		})
+
+		t.Run("FailZeroLen", func(t *testing.T) {
+			_, err := s.GetCoupons()
+			if err == nil || !errors.Is(err, ErrZeroCodes) {
+				t.Errorf("unexpected error: %v", err)
+				return
+			}
+		})
+
+		t.Run("FailOneIsInvalid", func(t *testing.T) {
+			_, err := s.GetCoupons(inputCode, "")
+			if err == nil || !errors.Is(err, discount.ErrInvalidCode) {
+				t.Errorf("unexpected error: %v", err)
+				return
+			}
+		})
+		t.Run("FailOneIsNotFound", func(t *testing.T) {
+			_, err := s.GetCoupons(inputCode, "___")
+			if err == nil || !errors.Is(err, repository.ErrNotFound) {
+				t.Errorf("unexpected error: %v", err)
+				return
+			}
+		})
+	})
+	t.Run("ApplyCoupon", func(t *testing.T) {
+		t.Run("Success", func(t *testing.T) {
+			input := &discount.Basket{
+				Value:           100,
+				AppliedDiscount: 0,
+			}
+			err := s.ApplyCoupon(input, inputCode)
+			if err != nil {
+				t.Errorf("unexpected error: %v", err)
+				return
+			}
+			if input.AppliedDiscount != inputDiscount {
+				t.Errorf("unexpected discount value in basket: wanted %d ; got %d", inputDiscount, input.AppliedDiscount)
+			}
+		})
+		t.Run("SuccessZeroValue", func(t *testing.T) {
+			input := &discount.Basket{
+				Value:           0,
+				AppliedDiscount: 0,
+			}
+			err := s.ApplyCoupon(input, inputCode)
+			if err != nil {
+				t.Errorf("unexpected error: %v", err)
+				return
+			}
+		})
+		t.Run("FailNilBasket", func(t *testing.T) {
+			err := s.ApplyCoupon(nil, inputCode)
+			if err == nil || !errors.Is(err, ErrNilBasket) {
+				t.Errorf("unexpected error: %v", err)
+				return
+			}
+		})
+
+		t.Run("FailEmptyCode", func(t *testing.T) {
+			input := &discount.Basket{
+				Value:           100,
+				AppliedDiscount: 0,
+			}
+			err := s.ApplyCoupon(input, "")
+			if err == nil || !errors.Is(err, ErrEmptyCode) {
+				t.Errorf("unexpected error: %v", err)
+				return
+			}
+		})
+
+		t.Run("FailNegativeValue", func(t *testing.T) {
+			input := &discount.Basket{
+				Value:           -100,
+				AppliedDiscount: 0,
+			}
+			err := s.ApplyCoupon(input, inputCode)
+			if err == nil || !errors.Is(err, ErrNegativeValue) {
+				t.Errorf("unexpected error: %v", err)
+				return
+			}
+		})
+
+		t.Run("FailNotFoundCode", func(t *testing.T) {
+			input := &discount.Basket{
+				Value:           100,
+				AppliedDiscount: 0,
+			}
+			err := s.ApplyCoupon(input, "___")
+			if err == nil || !errors.Is(err, repository.ErrNotFound) {
+				t.Errorf("unexpected error: %v", err)
+				return
+			}
+		})
+	})
+	t.Run("Close", func(t *testing.T) {
+		err := s.Close()
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+	})
 }
