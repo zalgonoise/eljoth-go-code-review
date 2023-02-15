@@ -12,17 +12,23 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// DefaultPort defines the default port for the CouponsService if unset
 const DefaultPort int = 8080
 
 var (
 	ErrNilServer = errors.New("server was not initialized properly and is nil")
 )
 
+// API describes the Coupons' HTTP server, configured with a discount.Service and
+// HTTP handlers.
 type API struct {
 	srv *http.Server
 	svc discount.Service
 }
 
+// New creates a new Coupons API, based off of the input port `port` and
+// discount.Service `svc`. It initializes the HTTP server with its routes configured
+// so it is ready to start.
 func New(port int, svc discount.Service) *API {
 	if port <= 0 {
 		port = DefaultPort
@@ -48,6 +54,7 @@ func New(port int, svc discount.Service) *API {
 	return api
 }
 
+// Start runs the server, returning an error. This is a blocking call.
 func (a *API) Start() error {
 	if a.srv == nil {
 		return ErrNilServer
@@ -55,6 +62,8 @@ func (a *API) Start() error {
 	return a.srv.ListenAndServe()
 }
 
+// Close implements the io.Closer interface, gracefully shutting down the
+// HTTP server; then the discount.Service. Returns an error if raised
 func (a *API) Close() error {
 	if a.srv == nil {
 		return ErrNilServer
