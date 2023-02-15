@@ -13,7 +13,8 @@ func (a *API) Apply(c *gin.Context) {
 	if err := c.ShouldBindJSON(&apiReq); err != nil {
 		return
 	}
-	basket, err := a.svc.ApplyCoupon(apiReq.Basket, apiReq.Code)
+	basket := &apiReq.Basket
+	err := a.svc.ApplyCoupon(basket, apiReq.Code)
 	if err != nil {
 		return
 	}

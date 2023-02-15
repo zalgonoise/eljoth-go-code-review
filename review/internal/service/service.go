@@ -1,11 +1,18 @@
 package service
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/zalgonoise/eljoth-go-code-review/coupon_service/internal/discount"
 
 	"github.com/google/uuid"
+)
+
+var (
+	ErrEmptyCode     = errors.New("coupon code cannot be empty")
+	ErrNilBasket     = errors.New("input basket cannot be nil")
+	ErrNegativeValue = errors.New("basket value cannot be a negative amount")
 )
 
 // verify that this implementation complies with the service interface
@@ -21,21 +28,28 @@ func New(repo discount.Repository) CouponService {
 	}
 }
 
-func (s CouponService) ApplyCoupon(basket discount.Basket, code string) (b *discount.Basket, e error) {
-	b = &basket
+func (s CouponService) ApplyCoupon(basket *discount.Basket, code string) error {
+	if code == "" {
+		return ErrEmptyCode
+	}
+	if basket == nil {
+		return ErrNilBasket
+	}
+	if basket.Value < 0 {
+		return ErrNegativeValue
+	}
+	if basket.Value == 0 {
+		// short-circuit out; empty basket
+		return nil
+	}
+
 	coupon, err := s.repo.FindByCode(code)
 	if err != nil {
-		return nil, err
+		return fmt.Errorf("%w: failed to apply discount", err)
 	}
 
-	if b.Value > 0 {
-		b.AppliedDiscount = coupon.Discount
-	}
-	if b.Value == 0 {
-		return
-	}
-
-	return nil, fmt.Errorf("Tried to apply discount to negative value")
+	basket.AppliedDiscount = coupon.Discount
+	return nil
 }
 
 func (s CouponService) CreateCoupon(discountVal int, code string, minBasketValue int) any {
