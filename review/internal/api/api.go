@@ -18,11 +18,6 @@ var (
 	ErrNilServer = errors.New("server was not initialized properly and is nil")
 )
 
-type Config struct {
-	Host string
-	Port int
-}
-
 type API struct {
 	srv *http.Server
 	svc discount.Service
@@ -39,16 +34,16 @@ func New(port int, svc discount.Service) *API {
 
 	api := &API{
 		svc: svc,
-		srv: &http.Server{
-			Addr:    fmt.Sprintf(":%d", port),
-			Handler: r,
-		},
 	}
+	r.POST("/api/apply", api.Apply())
+	r.POST("/api/create", api.Create())
+	r.GET("/api/coupons", api.List())
+	r.GET("/api/coupon", api.Get())
 
-	apiGroup := r.Group("/api")
-	apiGroup.POST("/apply", api.Apply)
-	apiGroup.POST("/create", api.Create)
-	apiGroup.GET("/coupons", api.Get)
+	api.srv = &http.Server{
+		Addr:    fmt.Sprintf(":%d", port),
+		Handler: r,
+	}
 
 	return api
 }
@@ -67,7 +62,11 @@ func (a *API) Close() error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	// TODO: implement a graceful shutdown for the CouponService
-	// if err := a.svc.Close(); err != nil { return err }
-	return a.srv.Shutdown(ctx)
+	if err := a.srv.Shutdown(ctx); err != nil {
+		if serviceErr := a.srv.Shutdown(ctx); err != nil {
+			return fmt.Errorf("%w -- service shutdown error: %v", err, serviceErr)
+		}
+		return err
+	}
+	return a.svc.Close()
 }
