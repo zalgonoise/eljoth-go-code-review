@@ -8,11 +8,6 @@ import (
 	"github.com/google/uuid"
 )
 
-type Repository interface {
-	FindByCode(string) (*Coupon, error)
-	Save(Coupon) error
-}
-
 type Service struct {
 	repo Repository
 }
