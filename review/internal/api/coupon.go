@@ -1,25 +1,48 @@
 package api
 
 import (
+	"errors"
 	"net/http"
 
 	. "github.com/zalgonoise/eljoth-go-code-review/coupon_service/internal/api/entity"
+	"github.com/zalgonoise/eljoth-go-code-review/coupon_service/internal/discount"
+	"github.com/zalgonoise/eljoth-go-code-review/coupon_service/internal/repository/memdb"
 
 	"github.com/gin-gonic/gin"
 )
 
 func (a *API) Apply(c *gin.Context) {
-	apiReq := ApplicationRequest{}
-	if err := c.ShouldBindJSON(&apiReq); err != nil {
-		return
+	type applicationRequest struct {
+		Code   string           `json:"code,omitempty"`
+		Basket *discount.Basket `json:"basket,omitempty"`
 	}
-	basket := &apiReq.Basket
-	err := a.svc.ApplyCoupon(basket, apiReq.Code)
-	if err != nil {
+
+	apiReq := applicationRequest{}
+	if err := c.ShouldBindJSON(&apiReq); err != nil {
+		// 400: validation error
+		c.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, basket)
+	err := a.svc.ApplyCoupon(apiReq.Basket, apiReq.Code)
+	if err != nil {
+		// 500: DB error
+		if errors.Is(err, memdb.ErrDBError) {
+			c.AbortWithError(http.StatusInternalServerError, err)
+			return
+		}
+		// 404: DB coupon not found
+		if errors.Is(err, memdb.ErrNotFound) {
+			c.AbortWithError(http.StatusNotFound, err)
+			return
+		}
+		// 400: validation error
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
+
+	// 200: OK
+	c.JSON(http.StatusOK, apiReq.Basket)
 }
 
 func (a *API) Create(c *gin.Context) {
