@@ -10,7 +10,7 @@ import (
 
 func TestNew(t *testing.T) {
 	type args struct {
-		repo Repository
+		repo discount.Repository
 	}
 	tests := []struct {
 		name string
@@ -30,7 +30,7 @@ func TestNew(t *testing.T) {
 
 func TestService_ApplyCoupon(t *testing.T) {
 	type fields struct {
-		repo Repository
+		repo discount.Repository
 	}
 	type args struct {
 		basket discount.Basket
@@ -62,7 +62,7 @@ func TestService_ApplyCoupon(t *testing.T) {
 
 func TestService_CreateCoupon(t *testing.T) {
 	type fields struct {
-		repo Repository
+		repo discount.Repository
 	}
 	type args struct {
 		discount       int
