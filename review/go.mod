@@ -3,7 +3,7 @@ module github.com/zalgonoise/eljoth-go-code-review/coupon_service // for a fork 
 go 1.18
 
 require (
-	github.com/gin-gonic/gin v1.7.6
+	github.com/gin-gonic/gin v1.7.7
 	github.com/google/uuid v1.3.0
 )
 
