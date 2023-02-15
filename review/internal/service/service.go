@@ -8,17 +8,20 @@ import (
 	"github.com/google/uuid"
 )
 
-type Service struct {
+// verify that this implementation complies with the service interface
+var _ discount.Service = CouponService{}
+
+type CouponService struct {
 	repo discount.Repository
 }
 
-func New(repo discount.Repository) Service {
-	return Service{
+func New(repo discount.Repository) CouponService {
+	return CouponService{
 		repo: repo,
 	}
 }
 
-func (s Service) ApplyCoupon(basket discount.Basket, code string) (b *discount.Basket, e error) {
+func (s CouponService) ApplyCoupon(basket discount.Basket, code string) (b *discount.Basket, e error) {
 	b = &basket
 	coupon, err := s.repo.FindByCode(code)
 	if err != nil {
@@ -35,7 +38,7 @@ func (s Service) ApplyCoupon(basket discount.Basket, code string) (b *discount.B
 	return nil, fmt.Errorf("Tried to apply discount to negative value")
 }
 
-func (s Service) CreateCoupon(discountVal int, code string, minBasketValue int) any {
+func (s CouponService) CreateCoupon(discountVal int, code string, minBasketValue int) any {
 	coupon := discount.Coupon{
 		Discount:       discountVal,
 		Code:           code,
@@ -49,7 +52,7 @@ func (s Service) CreateCoupon(discountVal int, code string, minBasketValue int) 
 	return nil
 }
 
-func (s Service) GetCoupons(codes []string) ([]discount.Coupon, error) {
+func (s CouponService) GetCoupons(codes []string) ([]discount.Coupon, error) {
 	coupons := make([]discount.Coupon, 0, len(codes))
 	var e error = nil
 
