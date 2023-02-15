@@ -1,12 +1,13 @@
 package main
 
 import (
-	"coupon_service/internal/api"
-	"coupon_service/internal/config"
-	"coupon_service/internal/repository/memdb"
-	"coupon_service/internal/service"
 	"fmt"
 	"time"
+
+	"github.com/zalgonoise/eljoth-go-code-review/coupon_service/internal/api"
+	"github.com/zalgonoise/eljoth-go-code-review/coupon_service/internal/config"
+	"github.com/zalgonoise/eljoth-go-code-review/coupon_service/internal/repository/memdb"
+	"github.com/zalgonoise/eljoth-go-code-review/coupon_service/internal/service"
 )
 
 var (

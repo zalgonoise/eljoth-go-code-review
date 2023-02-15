@@ -1,8 +1,9 @@
 package memdb
 
 import (
-	"coupon_service/internal/service/entity"
 	"fmt"
+
+	"github.com/zalgonoise/eljoth-go-code-review/coupon_service/internal/service/entity"
 )
 
 type Config struct{}
