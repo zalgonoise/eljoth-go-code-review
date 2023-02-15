@@ -18,10 +18,10 @@ var (
 // A coupon is used to apply a discount
 // to a shopping Basket
 type Coupon struct {
-	ID             string
-	Code           string
-	Discount       int
-	MinBasketValue int
+	ID             string `json:"id,omitempty"`
+	Code           string `json:"code,omitempty"`
+	Discount       int    `json:"discount,omitempty"`
+	MinBasketValue int    `json:"min_basket_value,omitempty"`
 }
 
 // NewCoupon creates a Coupon with validation
@@ -51,6 +51,6 @@ func NewCoupon(discountVal int, code string, minBasketValue int) (*Coupon, error
 // to serve as reference for the total price, and the
 // applied discount value
 type Basket struct {
-	Value           int
-	AppliedDiscount int
+	Value           int `json:"value,omitempty"`
+	AppliedDiscount int `json:"applied_discount,omitempty"`
 }
