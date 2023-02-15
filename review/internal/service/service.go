@@ -17,16 +17,19 @@ var (
 // verify that this implementation complies with the service interface
 var _ discount.Service = CouponService{}
 
+// CouponService implements the discount.Repository interface
 type CouponService struct {
 	repo discount.Repository
 }
 
+// New creates a CouponService based off of an input discount.Repository
 func New(repo discount.Repository) CouponService {
 	return CouponService{
 		repo: repo,
 	}
 }
 
+// ApplyCoupon applies the discount from coupon with code `code`, in the shopping basket `basket`
 func (s CouponService) ApplyCoupon(basket *discount.Basket, code string) error {
 	if code == "" {
 		return ErrEmptyCode
@@ -51,6 +54,8 @@ func (s CouponService) ApplyCoupon(basket *discount.Basket, code string) error {
 	return nil
 }
 
+// CreateCoupon generates a new Coupon entry from the input discount value `discountVal`, coupon code
+// `code` and with a minimum basket value `minBasketValue`
 func (s CouponService) CreateCoupon(discountVal int, code string, minBasketValue int) error {
 	coupon, err := discount.NewCoupon(discountVal, code, minBasketValue)
 	if err != nil {
@@ -62,6 +67,7 @@ func (s CouponService) CreateCoupon(discountVal int, code string, minBasketValue
 	return nil
 }
 
+// GetCoupons will fetch the corresponding coupon for each code provided in the input `codes`, if valid
 func (s CouponService) GetCoupons(codes ...string) ([]discount.Coupon, error) {
 	if len(codes) == 0 {
 		return nil, ErrZeroCodes
@@ -81,6 +87,7 @@ func (s CouponService) GetCoupons(codes ...string) ([]discount.Coupon, error) {
 	return coupons, nil
 }
 
+// Close implements the io.Closer interface
 func (s CouponService) Close() error {
 	return s.repo.Close()
 }

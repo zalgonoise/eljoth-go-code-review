@@ -10,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// Apply returns the handler function for requests hitting `POST /api/apply`
 func (a *API) Apply() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		type applicationRequest struct {
@@ -45,6 +46,8 @@ func (a *API) Apply() gin.HandlerFunc {
 		c.JSON(http.StatusOK, apiReq.Basket)
 	}
 }
+
+// Create returns the handler function for requests hitting `POST /api/create`
 func (a *API) Create() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		type coupon struct {
@@ -98,6 +101,7 @@ func (a *API) Create() gin.HandlerFunc {
 	}
 }
 
+// Get returns the handler function for requests hitting `GET /api/coupon`
 func (a *API) Get() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		type couponRequest struct {
@@ -131,6 +135,7 @@ func (a *API) Get() gin.HandlerFunc {
 	}
 }
 
+// List returns the handler function for requests hitting `GET /api/coupons`
 func (a *API) List() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		type couponRequest struct {
