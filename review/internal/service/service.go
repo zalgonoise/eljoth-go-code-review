@@ -80,3 +80,7 @@ func (s CouponService) GetCoupons(codes ...string) ([]discount.Coupon, error) {
 	}
 	return coupons, nil
 }
+
+func (s CouponService) Close() error {
+	return s.repo.Close()
+}
