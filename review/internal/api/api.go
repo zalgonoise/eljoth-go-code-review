@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"time"
 
@@ -61,12 +60,14 @@ func (a *API) Start() error {
 	return a.srv.ListenAndServe()
 }
 
-func (a *API) Close() {
-	<-time.After(5 * time.Second)
+func (a *API) Close() error {
+	if a.srv == nil {
+		return ErrNilServer
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	if err := a.srv.Shutdown(ctx); err != nil {
-		log.Println(err)
-	}
+	// TODO: implement a graceful shutdown for the CouponService
+	// if err := a.svc.Close(); err != nil { return err }
+	return a.srv.Shutdown(ctx)
 }
