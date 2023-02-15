@@ -1,10 +1,16 @@
 package memdb
 
 import (
+	"errors"
 	"fmt"
 	"sync"
 
 	"github.com/zalgonoise/eljoth-go-code-review/coupon_service/internal/discount"
+)
+
+var (
+	ErrNotFound = errors.New("not found")
+	ErrDBError  = errors.New("database error")
 )
 
 // verify that this implementation complies with the repository interface
@@ -24,12 +30,12 @@ func New() *CouponsRepository {
 func (r *CouponsRepository) FindByCode(code string) (*discount.Coupon, error) {
 	c, ok := r.entries.Load(code)
 	if !ok {
-		return nil, fmt.Errorf("Coupon not found")
+		return nil, fmt.Errorf("%w: no coupon with code %s", ErrNotFound, code)
 	}
 	if coupon, ok := (c).(discount.Coupon); ok {
 		return &coupon, nil
 	}
-	return nil, fmt.Errorf("internal: invalid coupon type")
+	return nil, fmt.Errorf("%w: invalid coupon type: %T", ErrDBError, c)
 }
 
 func (r *CouponsRepository) Save(coupon discount.Coupon) error {
