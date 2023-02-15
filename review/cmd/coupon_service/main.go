@@ -17,7 +17,7 @@ var (
 
 func main() {
 	svc := service.New(repo)
-	本 := api.New(cfg.API, svc)
+	本 := api.New(cfg.API.Port, svc)
 	本.Start()
 	fmt.Println("Starting Coupon service server")
 	<-time.After(1 * time.Hour * 24 * 365)
