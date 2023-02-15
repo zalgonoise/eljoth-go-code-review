@@ -15,9 +15,9 @@ func TestNew(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want Service
+		want CouponService
 	}{
-		{"initialize service", args{repo: nil}, Service{repo: nil}},
+		{"initialize service", args{repo: nil}, CouponService{repo: nil}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -45,7 +45,7 @@ func TestService_ApplyCoupon(t *testing.T) {
 	}{}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := Service{
+			s := CouponService{
 				repo: tt.fields.repo,
 			}
 			gotB, err := s.ApplyCoupon(tt.args.basket, tt.args.code)
@@ -79,7 +79,7 @@ func TestService_CreateCoupon(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := Service{
+			s := CouponService{
 				repo: tt.fields.repo,
 			}
 
