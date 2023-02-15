@@ -6,8 +6,6 @@ import (
 	"github.com/zalgonoise/eljoth-go-code-review/coupon_service/internal/discount"
 )
 
-type Config struct{}
-
 type repository interface {
 	FindByCode(string) (*discount.Coupon, error)
 	Save(discount.Coupon) error
