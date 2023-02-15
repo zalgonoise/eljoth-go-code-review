@@ -11,6 +11,7 @@ var (
 	ErrEmptyCode     = errors.New("coupon code cannot be empty")
 	ErrNilBasket     = errors.New("input basket cannot be nil")
 	ErrNegativeValue = errors.New("basket value cannot be a negative amount")
+	ErrZeroCodes     = errors.New("no coupon codes were provided")
 )
 
 // verify that this implementation complies with the service interface
@@ -61,21 +62,21 @@ func (s CouponService) CreateCoupon(discountVal int, code string, minBasketValue
 	return nil
 }
 
-func (s CouponService) GetCoupons(codes []string) ([]discount.Coupon, error) {
+func (s CouponService) GetCoupons(codes ...string) ([]discount.Coupon, error) {
+	if len(codes) == 0 {
+		return nil, ErrZeroCodes
+	}
 	coupons := make([]discount.Coupon, 0, len(codes))
-	var e error = nil
 
 	for idx, code := range codes {
+		if code == "" {
+			return nil, fmt.Errorf("%w: couldn't fetch code on index %d", discount.ErrInvalidCode, idx)
+		}
 		coupon, err := s.repo.FindByCode(code)
 		if err != nil {
-			if e == nil {
-				e = fmt.Errorf("code: %s, index: %d", code, idx)
-			} else {
-				e = fmt.Errorf("%w; code: %s, index: %d", e, code, idx)
-			}
+			return nil, fmt.Errorf("%w: couldn't fetch code on index %d", err, idx)
 		}
 		coupons = append(coupons, *coupon)
 	}
-
-	return coupons, e
+	return coupons, nil
 }
