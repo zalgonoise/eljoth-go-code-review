@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -30,7 +29,7 @@ func main() {
 		os.Exit(1)
 	}
 	<-closeSignal
-	fmt.Println("received an interrupt / terminate signal; exiting")
+	logger.Println("received an interrupt / terminate signal; exiting")
 	if err := server.Close(); err != nil {
 		logger.Fatalf("failed to stop HTTP server: %v\n", err)
 		os.Exit(1)
