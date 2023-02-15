@@ -4,8 +4,8 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/zalgonoise/eljoth-go-code-review/coupon_service/internal/discount"
 	"github.com/zalgonoise/eljoth-go-code-review/coupon_service/internal/repository/memdb"
-	"github.com/zalgonoise/eljoth-go-code-review/coupon_service/internal/service/entity"
 )
 
 func TestNew(t *testing.T) {
@@ -33,14 +33,14 @@ func TestService_ApplyCoupon(t *testing.T) {
 		repo Repository
 	}
 	type args struct {
-		basket entity.Basket
+		basket discount.Basket
 		code   string
 	}
 	tests := []struct {
 		name    string
 		fields  fields
 		args    args
-		wantB   *entity.Basket
+		wantB   *discount.Basket
 		wantErr bool
 	}{}
 	for _, tt := range tests {
