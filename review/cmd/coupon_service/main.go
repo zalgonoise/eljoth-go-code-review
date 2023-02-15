@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/zalgonoise/eljoth-go-code-review/coupon_service/cmd/config"
 	"github.com/zalgonoise/eljoth-go-code-review/coupon_service/internal/api"
-	"github.com/zalgonoise/eljoth-go-code-review/coupon_service/internal/config"
 	"github.com/zalgonoise/eljoth-go-code-review/coupon_service/internal/repository/memdb"
 	"github.com/zalgonoise/eljoth-go-code-review/coupon_service/internal/service"
 )
@@ -17,7 +17,7 @@ var (
 
 func main() {
 	svc := service.New(repo)
-	本 := api.New(cfg.API.Port, svc)
+	本 := api.New(cfg.Port, svc)
 	本.Start()
 	fmt.Println("Starting Coupon service server")
 	<-time.After(1 * time.Hour * 24 * 365)

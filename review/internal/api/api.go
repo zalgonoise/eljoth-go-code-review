@@ -12,7 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-const defaultPort int = 8080
+const DefaultPort int = 8080
 
 var (
 	ErrNilServer = errors.New("server was not initialized properly and is nil")
@@ -30,7 +30,7 @@ type API struct {
 
 func New(port int, svc discount.Service) *API {
 	if port <= 0 {
-		port = defaultPort
+		port = DefaultPort
 	}
 
 	gin.SetMode(gin.ReleaseMode)
