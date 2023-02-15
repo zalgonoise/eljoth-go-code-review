@@ -1,8 +1,10 @@
 package main
 
 import (
-	"fmt"
-	"time"
+	"log"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/zalgonoise/eljoth-go-code-review/coupon_service/cmd/config"
 	"github.com/zalgonoise/eljoth-go-code-review/coupon_service/internal/api"
@@ -10,17 +12,26 @@ import (
 	"github.com/zalgonoise/eljoth-go-code-review/coupon_service/internal/service"
 )
 
-var (
-	cfg  = config.New()
-	repo = memdb.New()
-)
-
 func main() {
-	svc := service.New(repo)
-	本 := api.New(cfg.Port, svc)
-	本.Start()
-	fmt.Println("Starting Coupon service server")
-	<-time.After(1 * time.Hour * 24 * 365)
-	fmt.Println("Coupon service server alive for a year, closing")
-	本.Close()
+	closeSignal := make(chan os.Signal, 1)
+	signal.Notify(closeSignal, syscall.SIGTERM, syscall.SIGQUIT, os.Interrupt)
+
+	// use a simple standard library logger
+	logger := log.New(os.Stderr, "coupon-service", log.Default().Flags())
+
+	cfg := config.ParseFlags()
+	svc := service.New(memdb.New())
+	server := api.New(cfg.Port, svc)
+
+	logger.Println("starting Coupon service server")
+	if err := server.Start(); err != nil {
+		logger.Fatalf("failed to start HTTP server: %v\n", err)
+		os.Exit(1)
+	}
+	<-closeSignal
+	logger.Println("received an interrupt / terminate signal; exiting")
+	if err := server.Close(); err != nil {
+		logger.Fatalf("failed to stop HTTP server: %v\n", err)
+		os.Exit(1)
+	}
 }
