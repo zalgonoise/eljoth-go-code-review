@@ -2,6 +2,7 @@ package memdb
 
 import (
 	"fmt"
+	"sync"
 
 	"github.com/zalgonoise/eljoth-go-code-review/coupon_service/internal/discount"
 )
@@ -11,24 +12,27 @@ var _ discount.Repository = &CouponsRepository{}
 
 // CouponsRepository implements discount.Repository
 type CouponsRepository struct {
-	entries map[string]discount.Coupon
+	entries *sync.Map // map[string]discount.Coupon
 }
 
 func New() *CouponsRepository {
 	return &CouponsRepository{
-		entries: make(map[string]discount.Coupon),
+		entries: new(sync.Map),
 	}
 }
 
 func (r *CouponsRepository) FindByCode(code string) (*discount.Coupon, error) {
-	coupon, ok := r.entries[code]
+	c, ok := r.entries.Load(code)
 	if !ok {
 		return nil, fmt.Errorf("Coupon not found")
 	}
-	return &coupon, nil
+	if coupon, ok := (c).(discount.Coupon); ok {
+		return &coupon, nil
+	}
+	return nil, fmt.Errorf("internal: invalid coupon type")
 }
 
 func (r *CouponsRepository) Save(coupon discount.Coupon) error {
-	r.entries[coupon.Code] = coupon
+	r.entries.Store(coupon.Code, coupon)
 	return nil
 }
