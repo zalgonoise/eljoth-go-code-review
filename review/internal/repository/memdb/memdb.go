@@ -6,20 +6,19 @@ import (
 	"github.com/zalgonoise/eljoth-go-code-review/coupon_service/internal/discount"
 )
 
-type repository interface {
-	FindByCode(string) (*discount.Coupon, error)
-	Save(discount.Coupon) error
-}
+// verify that this implementation complies with the repository interface
+var _ discount.Repository = &CouponsRepository{}
 
-type Repository struct {
+// CouponsRepository implements discount.Repository
+type CouponsRepository struct {
 	entries map[string]discount.Coupon
 }
 
-func New() *Repository {
-	return &Repository{}
+func New() *CouponsRepository {
+	return &CouponsRepository{}
 }
 
-func (r *Repository) FindByCode(code string) (*discount.Coupon, error) {
+func (r *CouponsRepository) FindByCode(code string) (*discount.Coupon, error) {
 	coupon, ok := r.entries[code]
 	if !ok {
 		return nil, fmt.Errorf("Coupon not found")
@@ -27,7 +26,7 @@ func (r *Repository) FindByCode(code string) (*discount.Coupon, error) {
 	return &coupon, nil
 }
 
-func (r *Repository) Save(coupon discount.Coupon) error {
+func (r *CouponsRepository) Save(coupon discount.Coupon) error {
 	r.entries[coupon.Code] = coupon
 	return nil
 }
