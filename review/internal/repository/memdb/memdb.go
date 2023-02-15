@@ -12,6 +12,7 @@ var (
 	ErrNotFound      = errors.New("not found")
 	ErrDBError       = errors.New("database error")
 	ErrAlreadyExists = errors.New("already exists")
+	ErrNilCoupon     = errors.New("coupon cannot be nil")
 )
 
 // verify that this implementation complies with the repository interface
@@ -19,7 +20,7 @@ var _ discount.Repository = &CouponsRepository{}
 
 // CouponsRepository implements discount.Repository
 type CouponsRepository struct {
-	entries *sync.Map // map[string]discount.Coupon
+	entries *sync.Map // map[string]*discount.Coupon
 }
 
 func New() *CouponsRepository {
@@ -33,13 +34,16 @@ func (r *CouponsRepository) FindByCode(code string) (*discount.Coupon, error) {
 	if !ok {
 		return nil, fmt.Errorf("%w: no coupon with code %s", ErrNotFound, code)
 	}
-	if coupon, ok := (c).(discount.Coupon); ok {
-		return &coupon, nil
+	if coupon, ok := (c).(*discount.Coupon); ok {
+		return coupon, nil
 	}
 	return nil, fmt.Errorf("%w: invalid coupon type: %T", ErrDBError, c)
 }
 
-func (r *CouponsRepository) Save(coupon discount.Coupon) error {
+func (r *CouponsRepository) Save(coupon *discount.Coupon) error {
+	if coupon == nil {
+		return ErrNilCoupon
+	}
 	if _, ok := r.entries.Load(coupon.Code); ok {
 		return fmt.Errorf("%w: coupon with code %s", ErrAlreadyExists, coupon.Code)
 	}
