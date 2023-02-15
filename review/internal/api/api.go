@@ -12,6 +12,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+const defaultPort int = 8080
+
 type Config struct {
 	Host string
 	Port int
@@ -19,44 +21,32 @@ type Config struct {
 
 type API struct {
 	srv *http.Server
-	MUX *gin.Engine
 	svc discount.Service
-	CFG Config
 }
 
-func New[T discount.Service](cfg Config, svc T) API {
+func New(port int, svc discount.Service) *API {
+	if port <= 0 {
+		port = defaultPort
+	}
+
 	gin.SetMode(gin.ReleaseMode)
-	r := new(gin.Engine)
-	r = gin.New()
+	r := gin.New()
 	r.Use(gin.Recovery())
 
-	return API{
-		MUX: r,
-		CFG: cfg,
+	api := &API{
 		svc: svc,
-	}.withServer()
-}
+		srv: &http.Server{
+			Addr:    fmt.Sprintf(":%d", port),
+			Handler: r,
+		},
+	}
 
-func (a API) withServer() API {
+	apiGroup := r.Group("/api")
+	apiGroup.POST("/apply", api.Apply)
+	apiGroup.POST("/create", api.Create)
+	apiGroup.GET("/coupons", api.Get)
 
-	ch := make(chan API)
-	go func() {
-		a.srv = &http.Server{
-			Addr:    fmt.Sprintf(":%d", a.CFG.Port),
-			Handler: a.MUX,
-		}
-		ch <- a
-	}()
-
-	return <-ch
-}
-
-func (a API) withRoutes() API {
-	apiGroup := a.MUX.Group("/api")
-	apiGroup.POST("/apply", a.Apply)
-	apiGroup.POST("/create", a.Create)
-	apiGroup.GET("/coupons", a.Get)
-	return a
+	return api
 }
 
 func (a API) Start() {
