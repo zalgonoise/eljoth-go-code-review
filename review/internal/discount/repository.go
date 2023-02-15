@@ -4,4 +4,5 @@ package discount
 type Repository interface {
 	FindByCode(string) (*Coupon, error)
 	Save(*Coupon) error
+	Close() error
 }
