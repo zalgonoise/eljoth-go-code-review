@@ -4,5 +4,5 @@ package discount
 type Service interface {
 	ApplyCoupon(*Basket, string) error
 	CreateCoupon(int, string, int) error
-	GetCoupons([]string) ([]Coupon, error)
+	GetCoupons(...string) ([]Coupon, error)
 }
