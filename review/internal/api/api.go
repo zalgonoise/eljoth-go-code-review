@@ -7,15 +7,15 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/zalgonoise/eljoth-go-code-review/coupon_service/internal/service/entity"
+	"github.com/zalgonoise/eljoth-go-code-review/coupon_service/internal/discount"
 
 	"github.com/gin-gonic/gin"
 )
 
 type Service interface {
-	ApplyCoupon(entity.Basket, string) (*entity.Basket, error)
+	ApplyCoupon(discount.Basket, string) (*discount.Basket, error)
 	CreateCoupon(int, string, int) any
-	GetCoupons([]string) ([]entity.Coupon, error)
+	GetCoupons([]string) ([]discount.Coupon, error)
 }
 
 type Config struct {

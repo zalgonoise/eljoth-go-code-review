@@ -3,7 +3,7 @@ package service
 import (
 	"fmt"
 
-	. "github.com/zalgonoise/eljoth-go-code-review/coupon_service/internal/service/entity"
+	. "github.com/zalgonoise/eljoth-go-code-review/coupon_service/internal/discount"
 
 	"github.com/google/uuid"
 )
@@ -32,7 +32,6 @@ func (s Service) ApplyCoupon(basket Basket, code string) (b *Basket, e error) {
 
 	if b.Value > 0 {
 		b.AppliedDiscount = coupon.Discount
-		b.ApplicationSuccessful = true
 	}
 	if b.Value == 0 {
 		return
