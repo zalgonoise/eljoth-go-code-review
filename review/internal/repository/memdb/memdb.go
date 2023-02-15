@@ -9,8 +9,9 @@ import (
 )
 
 var (
-	ErrNotFound = errors.New("not found")
-	ErrDBError  = errors.New("database error")
+	ErrNotFound      = errors.New("not found")
+	ErrDBError       = errors.New("database error")
+	ErrAlreadyExists = errors.New("already exists")
 )
 
 // verify that this implementation complies with the repository interface
@@ -39,6 +40,9 @@ func (r *CouponsRepository) FindByCode(code string) (*discount.Coupon, error) {
 }
 
 func (r *CouponsRepository) Save(coupon discount.Coupon) error {
+	if _, ok := r.entries.Load(coupon.Code); ok {
+		return fmt.Errorf("%w: coupon with code %s", ErrAlreadyExists, coupon.Code)
+	}
 	r.entries.Store(coupon.Code, coupon)
 	return nil
 }
