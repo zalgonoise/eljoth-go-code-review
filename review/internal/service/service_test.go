@@ -33,7 +33,7 @@ func TestService_ApplyCoupon(t *testing.T) {
 		repo discount.Repository
 	}
 	type args struct {
-		basket discount.Basket
+		basket *discount.Basket
 		code   string
 	}
 	tests := []struct {
@@ -48,13 +48,13 @@ func TestService_ApplyCoupon(t *testing.T) {
 			s := CouponService{
 				repo: tt.fields.repo,
 			}
-			gotB, err := s.ApplyCoupon(tt.args.basket, tt.args.code)
+			err := s.ApplyCoupon(tt.args.basket, tt.args.code)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ApplyCoupon() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(gotB, tt.wantB) {
-				t.Errorf("ApplyCoupon() gotB = %v, want %v", gotB, tt.wantB)
+			if !reflect.DeepEqual(tt.args.basket, tt.wantB) {
+				t.Errorf("ApplyCoupon() gotB = %v, want %v", tt.args.basket, tt.wantB)
 			}
 		})
 	}
