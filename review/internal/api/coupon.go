@@ -39,7 +39,7 @@ func (a *API) Get(c *gin.Context) {
 	if err := c.ShouldBindJSON(&apiReq); err != nil {
 		return
 	}
-	coupons, err := a.svc.GetCoupons(apiReq.Codes)
+	coupons, err := a.svc.GetCoupons(apiReq.Codes...)
 	if err != nil {
 		return
 	}
