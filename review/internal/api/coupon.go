@@ -46,14 +46,31 @@ func (a *API) Apply(c *gin.Context) {
 }
 
 func (a *API) Create(c *gin.Context) {
-	apiReq := Coupon{}
+	type coupon struct {
+		Discount       int    `json:"discount,omitempty"`
+		Code           string `json:"code,omitempty"`
+		MinBasketValue int    `json:"min_basket_value,omitempty"`
+	}
+
+	apiReq := coupon{}
 	if err := c.ShouldBindJSON(&apiReq); err != nil {
+		// 400: validation error
+		c.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
 	err := a.svc.CreateCoupon(apiReq.Discount, apiReq.Code, apiReq.MinBasketValue)
 	if err != nil {
+		// 409: conflict with existing coupon code
+		if errors.Is(err, memdb.ErrAlreadyExists) {
+			c.AbortWithError(http.StatusConflict, err)
+			return
+		}
+		// 400: validation error
+		c.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
+
+	// 200: OK
 	c.Status(http.StatusOK)
 }
 
