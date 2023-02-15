@@ -12,12 +12,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type Service interface {
-	ApplyCoupon(discount.Basket, string) (*discount.Basket, error)
-	CreateCoupon(int, string, int) any
-	GetCoupons([]string) ([]discount.Coupon, error)
-}
-
 type Config struct {
 	Host string
 	Port int
@@ -26,11 +20,11 @@ type Config struct {
 type API struct {
 	srv *http.Server
 	MUX *gin.Engine
-	svc Service
+	svc discount.Service
 	CFG Config
 }
 
-func New[T Service](cfg Config, svc T) API {
+func New[T discount.Service](cfg Config, svc T) API {
 	gin.SetMode(gin.ReleaseMode)
 	r := new(gin.Engine)
 	r = gin.New()
