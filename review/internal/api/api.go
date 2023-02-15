@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -13,6 +14,10 @@ import (
 )
 
 const defaultPort int = 8080
+
+var (
+	ErrNilServer = errors.New("server was not initialized properly and is nil")
+)
 
 type Config struct {
 	Host string
@@ -49,13 +54,14 @@ func New(port int, svc discount.Service) *API {
 	return api
 }
 
-func (a API) Start() {
-	if err := a.srv.ListenAndServe(); err != nil {
-		log.Fatal(err)
+func (a *API) Start() error {
+	if a.srv == nil {
+		return ErrNilServer
 	}
+	return a.srv.ListenAndServe()
 }
 
-func (a API) Close() {
+func (a *API) Close() {
 	<-time.After(5 * time.Second)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
