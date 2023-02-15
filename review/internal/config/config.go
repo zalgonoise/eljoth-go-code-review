@@ -1,8 +1,9 @@
 package config
 
 import (
-	"coupon_service/internal/api"
 	"log"
+
+	"github.com/zalgonoise/eljoth-go-code-review/coupon_service/internal/api"
 
 	"github.com/brumhard/alligotor"
 )

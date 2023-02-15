@@ -1,10 +1,11 @@
 package service
 
 import (
-	"coupon_service/internal/repository/memdb"
-	"coupon_service/internal/service/entity"
 	"reflect"
 	"testing"
+
+	"github.com/zalgonoise/eljoth-go-code-review/coupon_service/internal/repository/memdb"
+	"github.com/zalgonoise/eljoth-go-code-review/coupon_service/internal/service/entity"
 )
 
 func TestNew(t *testing.T) {

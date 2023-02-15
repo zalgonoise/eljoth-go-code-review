@@ -2,11 +2,12 @@ package api
 
 import (
 	"context"
-	"coupon_service/internal/service/entity"
 	"fmt"
 	"log"
 	"net/http"
 	"time"
+
+	"github.com/zalgonoise/eljoth-go-code-review/coupon_service/internal/service/entity"
 
 	"github.com/gin-gonic/gin"
 )

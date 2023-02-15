@@ -1,8 +1,9 @@
 package api
 
 import (
-	. "coupon_service/internal/api/entity"
 	"net/http"
+
+	. "github.com/zalgonoise/eljoth-go-code-review/coupon_service/internal/api/entity"
 
 	"github.com/gin-gonic/gin"
 )
