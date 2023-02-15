@@ -5,8 +5,6 @@ import (
 	"fmt"
 
 	"github.com/zalgonoise/eljoth-go-code-review/coupon_service/internal/discount"
-
-	"github.com/google/uuid"
 )
 
 var (
@@ -52,16 +50,13 @@ func (s CouponService) ApplyCoupon(basket *discount.Basket, code string) error {
 	return nil
 }
 
-func (s CouponService) CreateCoupon(discountVal int, code string, minBasketValue int) any {
-	coupon := discount.Coupon{
-		Discount:       discountVal,
-		Code:           code,
-		MinBasketValue: minBasketValue,
-		ID:             uuid.NewString(),
+func (s CouponService) CreateCoupon(discountVal int, code string, minBasketValue int) error {
+	coupon, err := discount.NewCoupon(discountVal, code, minBasketValue)
+	if err != nil {
+		return fmt.Errorf("%w: failed to create coupon", err)
 	}
-
 	if err := s.repo.Save(coupon); err != nil {
-		return err
+		return fmt.Errorf("%w: failed to create coupon", err)
 	}
 	return nil
 }
