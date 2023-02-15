@@ -1,7 +1,9 @@
 package main
 
 import (
+	"errors"
 	"log"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -17,17 +19,20 @@ func main() {
 	signal.Notify(closeSignal, syscall.SIGTERM, syscall.SIGQUIT, os.Interrupt)
 
 	// use a simple standard library logger
-	logger := log.New(os.Stderr, "coupon-service", log.Default().Flags())
+	logger := log.New(os.Stderr, "[coupon-service] ", log.Default().Flags())
 
 	cfg := config.ParseFlags()
 	svc := service.New(memdb.New())
 	server := api.New(cfg.Port, svc)
 
 	logger.Println("starting Coupon service server")
-	if err := server.Start(); err != nil {
-		logger.Fatalf("failed to start HTTP server: %v\n", err)
-		os.Exit(1)
-	}
+	go func() {
+		if err := server.Start(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			logger.Fatalf("failed to start HTTP server: %v\n", err)
+			os.Exit(1)
+		}
+	}()
+
 	<-closeSignal
 	logger.Println("received an interrupt / terminate signal; exiting")
 	if err := server.Close(); err != nil {

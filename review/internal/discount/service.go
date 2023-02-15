@@ -5,4 +5,5 @@ type Service interface {
 	ApplyCoupon(*Basket, string) error
 	CreateCoupon(int, string, int) error
 	GetCoupons(...string) ([]Coupon, error)
+	Close() error
 }
